@@ -238,6 +238,12 @@ class PaginatorTestCase(TestCase):
         self.assertEqual(meta['previous'], '/api/v1/notes/?a=1&a=2&limit=2&offset=0')
         self.assertEqual(meta['next'], '/api/v1/notes/?a=1&a=2&limit=2&offset=4')
 
+    def test_multiple_order_by(self):
+        request = QueryDict('limit=2&offset=0&order_by=author&order_by=-id&format=json')
+        paginator = Paginator(request,self.data_set,resource_uri='/api/v1/notes/')
+        meta = paginator.page()['meta']
+        self.assertEqual(meta['next'],'/api/v1/notes/?limit=2&offset=2&order_by=author&order_by=-id&format=json')    
+
     def test_max_limit(self):
         paginator = Paginator({'limit': 0}, self.data_set, max_limit=10,
                               resource_uri='/api/v1/notes/')
