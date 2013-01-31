@@ -3101,6 +3101,24 @@ class ModelResourceTestCase(TestCase):
         response = resource.patch_list(request)
         self.assertEqual(response.status_code, 202)
 
+    def test_ToOneField_to_unauthorized_resource(self):
+
+        # See https://github.com/toastdriven/django-tastypie/issues/787
+
+        class UnauthorizedResource(UserResource):
+            def apply_authorization_limits(self,request,object_list):
+                return []
+
+        class ForeignKeyResource(RelatedNoteResource):
+            author = fields.ForeignKey(UnauthorizedResource, 'author')
+
+        fk = ForeignKeyResource()
+        note = fk.obj_get(pk=1)
+        note_bundle = fk.build_bundle(obj=note)
+        note_bundle = fk.full_dehydrate(note_bundle)
+
+        hydrated = fk.full_hydrate(note_bundle)
+
 
 class BasicAuthResourceTestCase(TestCase):
     fixtures = ['note_testdata.json']
